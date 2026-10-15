@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../constants/app_colors.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/gradient_button.dart';
@@ -26,8 +26,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return;
     }
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('userName', name);
+    await Hive.box('settings').put('userName', name);
 
     if (!mounted) return;
     Navigator.pushReplacement(

@@ -4,11 +4,9 @@ import '../constants/app_colors.dart';
 import '../widgets/app_top_bar.dart';
 import '../widgets/gradient_button.dart';
 
-// شاشة تعديل المهمة: نفس تصميم Add Task لكن الحقل يبدأ بعنوان المهمة الحالي
-// + أزرار اختيار الحالة (To Do / Done) مثل التصميم
 class EditTaskScreen extends StatefulWidget {
   final String initialTitle;
-  final bool initialIsDone; // الحالة الحالية للمهمة (الافتراضي To Do)
+  final bool initialIsDone;
 
   const EditTaskScreen({
     super.key,
@@ -23,13 +21,11 @@ class EditTaskScreen extends StatefulWidget {
 class _EditTaskScreenState extends State<EditTaskScreen> {
   late final TextEditingController titleController;
 
-  // الحالة المختارة: false = To Do ، true = Done
   late bool isDone;
 
   @override
   void initState() {
     super.initState();
-    // نعبّئ الحقل بالعنوان الحالي (مثل: Learn Flutter)
     titleController = TextEditingController(text: widget.initialTitle);
     isDone = widget.initialIsDone;
   }
@@ -44,7 +40,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       return;
     }
 
-    // نرجع العنوان الجديد للشاشة الرئيسية
     Navigator.pop(context, title);
   }
 
@@ -54,7 +49,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     super.dispose();
   }
 
-  // زر حالة صغير (To Do / Done): المختار واضح، وغير المختار شفاف
   Widget statusButton({
     required String text,
     required IconData icon,

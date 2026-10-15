@@ -1,14 +1,8 @@
-class Task {
+import 'package:hive/hive.dart';
+
+class Task extends HiveObject {
   String title;
   bool isDone;
 
   Task({required this.title, this.isDone = false});
-
-  Map<String, dynamic> toMap() {
-    return {'title': title, 'isDone': isDone};
-  }
-
-  factory Task.fromMap(Map<String, dynamic> map) {
-    return Task(title: map['title'], isDone: map['isDone']);
-  }
 }

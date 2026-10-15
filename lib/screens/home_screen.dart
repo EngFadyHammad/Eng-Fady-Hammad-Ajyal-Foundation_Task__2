@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import '../constants/app_colors.dart';
 import '../models/task.dart';
 import '../widgets/app_top_bar.dart';
@@ -19,61 +18,34 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Task> tasks = [];
+  final Box<Task> tasksBox = Hive.box<Task>('tasks');
 
-  @override
-  void initState() {
-    super.initState();
-    loadTasks();
-  }
-
-  Future<void> loadTasks() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? data = prefs.getString('tasks');
-
-    if (data != null) {
-      List decoded = jsonDecode(data);
-      setState(() {
-        tasks = decoded.map((e) => Task.fromMap(e)).toList();
-      });
-    }
-  }
-
-  Future<void> saveTasks() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String data = jsonEncode(tasks.map((t) => t.toMap()).toList());
-    await prefs.setString('tasks', data);
-  }
-
-  int get doneCount => tasks.where((t) => t.isDone).length;
-  int get todoCount => tasks.length - doneCount;
+  int get doneCount => tasksBox.values.where((t) => t.isDone).length;
+  int get todoCount => tasksBox.length - doneCount;
 
   void addTask(String title) {
-    setState(() {
-      tasks.add(Task(title: title));
-    });
-    saveTasks();
+    tasksBox.add(Task(title: title));
+    setState(() {});
   }
 
   void toggleTask(int index) {
-    setState(() {
-      tasks[index].isDone = !tasks[index].isDone;
-    });
-    saveTasks();
+    Task task = tasksBox.getAt(index)!;
+    task.isDone = !task.isDone;
+    task.save();
+    setState(() {});
   }
 
   void deleteTask(int index) {
-    setState(() {
-      tasks.removeAt(index);
-    });
-    saveTasks();
+    Task task = tasksBox.getAt(index)!;
+    task.delete();
+    setState(() {});
   }
 
   void editTask(int index, String newTitle) {
-    setState(() {
-      tasks[index].title = newTitle;
-    });
-    saveTasks();
+    Task task = tasksBox.getAt(index)!;
+    task.title = newTitle;
+    task.save();
+    setState(() {});
   }
 
   Future<void> openAddTaskScreen() async {
@@ -92,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(
         builder: (context) =>
-            EditTaskScreen(initialTitle: tasks[index].title),
+            EditTaskScreen(initialTitle: tasksBox.getAt(index)!.title),
       ),
     );
 
@@ -149,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const Gap(12),
-            if (tasks.isEmpty)
+            if (tasksBox.isEmpty)
               Container(
                 width: double.infinity,
                 height: 160,
@@ -179,10 +151,10 @@ class _HomeScreenState extends State<HomeScreen> {
             else
               Expanded(
                 child: ListView.builder(
-                  itemCount: tasks.length,
+                  itemCount: tasksBox.length,
                   itemBuilder: (context, index) {
                     return TaskCard(
-                      task: tasks[index],
+                      task: tasksBox.getAt(index)!,
                       onTap: () => toggleTask(index),
                       onLongPress: () => deleteTask(index),
                       onEdit: () => openEditTaskScreen(index),
